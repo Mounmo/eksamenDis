@@ -1,6 +1,10 @@
 package model;
 
+import utils.Hashing;
+
 public class User {
+
+  Hashing hashing = new Hashing();
 
   public int id;
   public String firstname;
