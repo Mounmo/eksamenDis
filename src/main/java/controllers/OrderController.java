@@ -3,6 +3,8 @@ package controllers;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
+
+import com.sun.tools.corba.se.idl.constExpr.Or;
 import model.Address;
 import model.LineItem;
 import model.Order;
@@ -129,16 +131,30 @@ public class OrderController {
     }
 
     // Save addresses to database and save them back to initial order instance
-    order.setBillingAddress(AddressController.createAddress(order.getBillingAddress()));
-    order.setShippingAddress(AddressController.createAddress(order.getShippingAddress()));
+    Address billingAddress = AddressController.createAddress(order.getBillingAddress());
+    if (billingAddress == null){
+      return null;
+    }
+    order.setBillingAddress(billingAddress);
+
+    Address shippingAddress = AddressController.createAddress(order.getShippingAddress());
+    if (shippingAddress == null){
+      return null;
+    }
+    order.setShippingAddress(shippingAddress);
 
     // Save the user to the database and save them back to initial order instance
-    order.setCustomer(UserController.createUser(order.getCustomer()));
+    User customer = UserController.createUser(order.getCustomer());
+    if (customer == null){
+      return null;
+    }
+    order.setCustomer(customer);
 
-    // TODO: Enable transactions in order for us to not save the order if somethings fails for some of the other inserts.
+    // TODO: Enable transactions in order for us to not save the order if somethings fails for some of the other inserts.: FIX
 
     // Insert the product in the DB
-    int orderID = dbCon.insert(
+
+     int orderID = dbCon.insert(
         "INSERT INTO orders(user_id, billing_address_id, shipping_address_id, order_total, created_at, updated_at) VALUES("
             + order.getCustomer().getId()
             + ", "

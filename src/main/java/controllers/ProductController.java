@@ -97,7 +97,7 @@ public class ProductController {
       dbCon = new DatabaseController();
     }
 
-    // TODO: Use caching layer.
+    // TODO: Use caching layer.: FIX
     String sql = "SELECT * FROM product";
 
     ResultSet rs = dbCon.query(sql);
@@ -119,6 +119,7 @@ public class ProductController {
     } catch (SQLException ex) {
       System.out.println(ex.getMessage());
     }
+
 
     return products;
   }
