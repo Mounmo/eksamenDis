@@ -42,6 +42,8 @@ public class UserEndpoints {
   }
 
   /** @return Responses */
+
+  public static UserCache userCache = new UserCache();
   @GET
   @Path("/")
   public Response getUsers() {
@@ -50,7 +52,6 @@ public class UserEndpoints {
     Log.writeLog(this.getClass().getName(), this, "Get all users", 0);
 
     // Get a list of users
-    UserCache userCache = new UserCache();
     ArrayList<User> users = userCache.getUsers(false);
 
     // TODO: Add Encryption to JSON: FIX
@@ -106,19 +107,15 @@ public class UserEndpoints {
 
   // TODO: Make the system able to delete users: FIX
   @DELETE
-  @Path("/{idUser}")
+  @Path("/{idUser}/{token}")
   @Consumes(MediaType.APPLICATION_JSON)
-  public Response deleteUser(String x) {
+  public Response deleteUser(@PathParam("idUser") int x, @PathParam("token") String token) {
 
-    User user = new Gson().fromJson(x, User.class);
+   Boolean userDeleted = UserController.deleteUser(token);
 
-    User deleteUser = UserController.deleteUser(user);
-
-    String json = new Gson().toJson(deleteUser);
-
-    if (deleteUser != null){
+    if (userDeleted){
       // Return a response with status 200 and JSON as type
-      return Response.status(200).type(MediaType.APPLICATION_JSON_TYPE).entity(json).build();
+      return Response.status(200).entity("User has been deleted").build();
     }else {
       // Return a response with status 200 and JSON as type
       return Response.status(400).entity("Could not delete user").build();
@@ -127,19 +124,17 @@ public class UserEndpoints {
 
   // TODO: Make the system able to update users: FIX
   @PUT
-  @Path("/{idUser}")
+  @Path("/{idUser}/{token}")
   @Consumes(MediaType.APPLICATION_JSON)
-  public Response updateUser(String x) {
+  public Response updateUser(@PathParam("token") String token, String body) {
 
-   User user = new Gson().fromJson(x, User.class);
+    User user = new Gson().fromJson(body, User.class);
 
-   User updatedUser = UserController.updateUser(user);
+    Boolean updatedUser = UserController.updateUser(token, user);
 
-   String json = new Gson().toJson(updatedUser);
-
-    if (updatedUser != null){
+    if (updatedUser){
       // Return a response with status 200 and JSON as type
-      return Response.status(200).type(MediaType.APPLICATION_JSON_TYPE).entity(json).build();
+      return Response.status(200).entity("Brugeren er opdateret").build();
     }else {
       return Response.status(400).entity("Could not update user").build();
     }

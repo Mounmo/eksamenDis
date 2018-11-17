@@ -38,13 +38,13 @@ public class OrderEndpoints {
     return Response.status(200).type(MediaType.APPLICATION_JSON).entity(json).build();
   }
 
+  public static OrderCache orderCache = new OrderCache();
   /** @return Responses */
   @GET
   @Path("/")
   public Response getOrders() {
 
     // Call our controller-layer in order to get the order from the DB
-    OrderCache orderCache = new OrderCache();
     ArrayList<Order> orders = orderCache.getOrders(false);
 
     // TODO: Add Encryption to JSON: FIX
