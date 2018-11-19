@@ -91,9 +91,9 @@ public class UserEndpoints {
   @POST
   @Path("/login")
   @Consumes(MediaType.APPLICATION_JSON)
-  public Response loginUser(String x) {
+  public Response loginUser(String body) {
 
-    User user = new Gson().fromJson(x, User.class);
+    User user = new Gson().fromJson(body, User.class);
 
     String token = UserController.loginUser(user);
 
@@ -107,9 +107,9 @@ public class UserEndpoints {
 
   // TODO: Make the system able to delete users: FIX
   @DELETE
-  @Path("/{idUser}/{token}")
+  @Path("/{token}")
   @Consumes(MediaType.APPLICATION_JSON)
-  public Response deleteUser(@PathParam("idUser") int x, @PathParam("token") String token) {
+  public Response deleteUser(@PathParam("token") String token) {
 
    Boolean userDeleted = UserController.deleteUser(token);
 
@@ -124,7 +124,7 @@ public class UserEndpoints {
 
   // TODO: Make the system able to update users: FIX
   @PUT
-  @Path("/{idUser}/{token}")
+  @Path("/{token}")
   @Consumes(MediaType.APPLICATION_JSON)
   public Response updateUser(@PathParam("token") String token, String body) {
 
@@ -134,7 +134,7 @@ public class UserEndpoints {
 
     if (updatedUser){
       // Return a response with status 200 and JSON as type
-      return Response.status(200).entity("Brugeren er opdateret").build();
+      return Response.status(200).entity("User has been updated").build();
     }else {
       return Response.status(400).entity("Could not update user").build();
     }
