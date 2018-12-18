@@ -142,6 +142,7 @@ public class OrderController {
 
     Connection connection = dbCon.getConnection();
     try {
+      // Setting auto-commit to false
       connection.setAutoCommit(false);
       // Insert the product in the DB
       int orderID = dbCon.insert(
@@ -185,6 +186,7 @@ public class OrderController {
       }
     } finally {
       try {
+        //Setting autocommit to true, so that when all informations have been filled out then commit the Order to database
         connection.setAutoCommit(true);
       } catch (SQLException exp ){
         exp.printStackTrace();

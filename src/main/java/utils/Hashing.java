@@ -38,12 +38,14 @@ public final class Hashing {
     return null;
   }
 
+  // a method that adds salt to the password
   public static String addSaltMd5(String password){
 
     String salt = "randomrandom";
 
     String saltedPassword = password + salt;
 
+    // The password with the added salt is being hashed with the use of the method md5
     return md5(saltedPassword);
   }
 
@@ -69,12 +71,14 @@ public final class Hashing {
     return rawString;
   }
 
+  // a method that adds salt to the password
   public static String addSaltSha(String password){
 
     String salt = "randomrandom";
 
     String saltedPassword = password + salt;
 
+    // The password with the added salt is being hashed with the use of the method sha
     return sha(saltedPassword);
   }
 }

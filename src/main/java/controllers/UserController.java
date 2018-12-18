@@ -8,6 +8,7 @@ import com.auth0.jwt.JWT;
 import com.auth0.jwt.exceptions.JWTCreationException;
 import com.auth0.jwt.exceptions.JWTDecodeException;
 import com.auth0.jwt.interfaces.DecodedJWT;
+import com.cbsexam.UserEndpoints;
 import model.User;
 import utils.Hashing;
 import utils.Log;
@@ -44,7 +45,10 @@ public class UserController {
                 rs.getString("first_name"),
                 rs.getString("last_name"),
                 rs.getString("password"),
-                rs.getString("email"));
+                rs.getString("email"),
+                    rs.getLong("created_at"));
+
+
 
         // return the create object
         return user;
@@ -87,7 +91,8 @@ public class UserController {
                 rs.getString("first_name"),
                 rs.getString("last_name"),
                 rs.getString("password"),
-                rs.getString("email"));
+                rs.getString("email"),
+                    rs.getLong("created_at"));
 
         // Add element to list
         users.add(user);
@@ -100,29 +105,36 @@ public class UserController {
     return users;
   }
 
-  public static boolean updateUser(String token, User user) {
+  // update users informations
+  public static boolean updateUser(User user, String token) {
 
+    //Check for the database connection
     if (dbCon == null) {
       dbCon = new DatabaseController();
     }
 
+    //Decode the token and return an id
     try {
       DecodedJWT jwt = JWT.decode(token);
       int id = jwt.getClaim("userID").asInt();
 
+      // A prepared statement to the database that it should update user with the id
       try {
-        PreparedStatement updateUser = dbCon.getConnection().prepareStatement("UPDATE USER SET " +
+        PreparedStatement updateUser = dbCon.getConnection().prepareStatement("UPDATE user SET " +
                 "first_name=?, last_name=?, password=?, email=? WHERE id=?");
 
         updateUser.setString(1, user.getFirstname());
         updateUser.setString(2, user.getLastname());
-        updateUser.setString(3, user.getPassword());
+        updateUser.setString(3, Hashing.addSaltSha(user.getPassword()));
         updateUser.setString(4, user.getEmail());
         updateUser.setInt(5, id);
 
         int affectedRows = updateUser.executeUpdate();
 
+        // if affected rows equals 1, then we know that the change has been committed.
         if (affectedRows == 1){
+          // force the cache to update since there have been added som changes to the database
+          UserEndpoints.userCache.getUsers(true);
           return true;
         }
 
@@ -136,17 +148,21 @@ public class UserController {
     return false;
   }
 
+  // delete user
   public static Boolean deleteUser(String token){
 
+    // check for database connection
     if (dbCon == null) {
       dbCon = new DatabaseController();
     }
 
+    // decode the token to an id
     try {
 
       DecodedJWT jwt = JWT.decode(token);
       int id = jwt.getClaim("userID").asInt();
 
+      // a prepared statement that deletes the user with the exact same id.
       try {
         PreparedStatement deleteUser = dbCon.getConnection().prepareStatement("DELETE FROM user WHERE id=?");
 
@@ -154,7 +170,10 @@ public class UserController {
 
         int affectedRows = deleteUser.executeUpdate();
 
+        // if affected rows equals 1, then the user has succesfully been deleted.
         if (affectedRows == 1){
+          // force the cache to update since there have been added som changes to the database
+          UserEndpoints.userCache.getUsers(true);
           return true;
         }
 
@@ -205,12 +224,16 @@ public class UserController {
       return null;
     }
 
+    // force the cache to update since there have been added som changes to the database
+    UserEndpoints.userCache.getUsers(true);
     // Return user
     return user;
   }
 
+  // login user
   public static String loginUser(User user){
 
+    // checks database connection
     if (dbCon == null) {
       dbCon = new DatabaseController();
     }
@@ -219,6 +242,7 @@ public class UserController {
     User userLogin;
     String token = null;
 
+    // making af prepared statement to database to find a user with the same password and email
     try {
       PreparedStatement loginUser = dbCon.getConnection().prepareStatement("SELECT * FROM user WHERE email=? AND" +
               " password=?");
@@ -229,6 +253,7 @@ public class UserController {
 
       rs = loginUser.executeQuery();
 
+      //Going through resultset to find the users information
       if (rs.next()) {
         userLogin = new User(
                 rs.getInt("id"),
@@ -247,6 +272,7 @@ public class UserController {
           } catch (JWTCreationException ex){
 
           } finally {
+            //if a User is found return a token
             return token;
           }
         }
